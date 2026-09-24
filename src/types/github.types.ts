@@ -1,3 +1,3 @@
-import * as gh from "@actions/github";
+import * as gh from '@actions/github'
 
-export type TGithubContext = typeof gh.context;
+export type TGithubContext = typeof gh.context

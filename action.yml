@@ -1,5 +1,6 @@
 name: 'Contribution Tracker'
-description: 'Captures GitHub contribution events and emits a standardised payload'
+description:
+  'Captures GitHub contribution events and emits a standardised payload'
 author: 'your-name'
 
 inputs:

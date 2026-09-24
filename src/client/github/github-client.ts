@@ -14,12 +14,15 @@ export class GitHubClient {
     repo: string,
     pullNumber: number
   ): Promise<TReview[]> {
-    const data = await this.octokit.paginate(this.octokit.rest.pulls.listReviews, {
-      owner,
-      repo,
-      pull_number: pullNumber,
-      per_page: 100
-    })
+    const data = await this.octokit.paginate(
+      this.octokit.rest.pulls.listReviews,
+      {
+        owner,
+        repo,
+        pull_number: pullNumber,
+        per_page: 100
+      }
+    )
 
     return data
       .filter(
@@ -45,6 +48,4 @@ export class GitHubClient {
         }
       })
   }
-
-  
 }
