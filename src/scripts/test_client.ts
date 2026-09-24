@@ -1,5 +1,6 @@
 import { GitHubClient } from '../client/github/github-client.js'
 import * as github from '@actions/github'
+import { TReview } from '../types/contribution-payload.type.js'
 
 async function run() {
   const token = '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'
@@ -31,8 +32,11 @@ async function run() {
       `Found ${pulls.length} pull requests. Fetching reviews for each...\n`
     )
 
-    const allReviews: { pullNumber: number; title: string; reviews: any[] }[] =
-      []
+    const allReviews: {
+      pullNumber: number
+      title: string
+      reviews: TReview[]
+    }[] = []
 
     for (const pr of pulls) {
       console.log(`Fetching reviews for PR #${pr.number} (${pr.title})...`)
@@ -43,10 +47,10 @@ async function run() {
           title: pr.title,
           reviews
         })
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(
           `Error fetching reviews for PR #${pr.number}:`,
-          error.message || error
+          error instanceof Error ? error.message : error
         )
       }
     }
