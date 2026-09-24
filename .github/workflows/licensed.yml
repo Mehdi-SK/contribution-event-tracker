@@ -34,11 +34,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: .node-version
-          cache: npm
+          cache: yarn
 
       - name: Install Dependencies
-        id: npm-ci
-        run: npm ci
+        id: install
+        run: yarn install --frozen-lockfile
 
       - name: Setup Ruby
         id: setup-ruby

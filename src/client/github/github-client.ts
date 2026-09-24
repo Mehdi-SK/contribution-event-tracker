@@ -28,7 +28,7 @@ export class GitHubClient {
         ): review is typeof review & {
           user: NonNullable<(typeof review)['user']> // Ensure that the user is neither null nor undefined
         } => {
-          if (!!review.user) {
+          if (review.user) {
             return true
           }
           logger.info(
