@@ -13,7 +13,7 @@ export type EventType = (typeof EventTypes)[keyof typeof EventTypes]
 
 interface BasePayload {
   contribution_id: string
-  github_login: string | null
+  github_login: string
   repository: string
   timestamp: string
 }

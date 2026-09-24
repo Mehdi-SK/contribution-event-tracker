@@ -19,14 +19,14 @@ export class PRMergedEventHandler implements IPRActionHandler {
   }
   async process(payload: GHPullRequestPayload): Promise<PRPayload[]> {
     const { pull_request, repository } = payload
+    if (!pull_request.user) {
+      throw new Error('Pull request user is null')
+    }
     const reviews = await getPullRequestReviewers(
       repository.owner.login,
       repository.name,
       pull_request.number
     )
-    if (!pull_request.user) {
-      throw new Error('Pull request user is null')
-    }
     const outputPayload: PRPayload = {
       contribution_id: `pull_request-merged-${repository.owner.login}-${repository.name}-${pull_request.number}`,
       github_login: pull_request.user.login,
