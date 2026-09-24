@@ -86166,12 +86166,12 @@ const logger = {
     warn: (msg) => {
         const message = format(msg);
         console.log(chalk.yellow('⚠'), message);
-        warning(message); // <-- Pins to the "Annotations" tab
+        warning(message);
     },
     error: (msg) => {
         const message = format(msg);
         console.log(chalk.red('✖'), message);
-        setFailed(message);
+        error(format(message));
     },
     group: (name, fn) => {
         startGroup(name);
@@ -86233,10 +86233,10 @@ class PRMergedEventHandler {
     }
     async process(payload) {
         const { pull_request, repository } = payload;
-        const reviews = await getPullRequestReviewers(repository.owner.login, repository.name, pull_request.number);
         if (!pull_request.user) {
             throw new Error('Pull request user is null');
         }
+        const reviews = await getPullRequestReviewers(repository.owner.login, repository.name, pull_request.number);
         const outputPayload = {
             contribution_id: `pull_request-merged-${repository.owner.login}-${repository.name}-${pull_request.number}`,
             github_login: pull_request.user.login,
@@ -86278,13 +86278,19 @@ async function initializeClients() {
     GitHubClient.initialize(getInput('github-token', { required: true }));
 }
 async function run() {
-    await initializeClients();
-    const event = githubExports.context.eventName;
-    const payload = githubExports.context.payload;
-    const processor = processors.find((p) => p.canHandle(event));
-    const trackedEvents = processor ? await processor.process(payload) : null;
-    logger.info('Output:');
-    logger.info(JSON.stringify(trackedEvents, null, 2));
+    try {
+        await initializeClients();
+        const event = githubExports.context.eventName;
+        const payload = githubExports.context.payload;
+        const processor = processors.find((p) => p.canHandle(event));
+        const trackedEvents = processor ? await processor.process(payload) : null;
+        logger.info('Output:');
+        logger.info(JSON.stringify(trackedEvents, null, 2));
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        setFailed(message);
+    }
 }
 
 /**

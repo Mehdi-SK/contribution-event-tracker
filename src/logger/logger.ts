@@ -20,13 +20,13 @@ export const logger = {
   warn: (msg: unknown) => {
     const message = format(msg);
     console.log(chalk.yellow('⚠'), message);
-    core.warning(message); // <-- Pins to the "Annotations" tab
+    core.warning(message);
   },
 
   error: (msg: unknown) => {
     const message = format(msg);
     console.log(chalk.red('✖'), message);
-    core.setFailed(message); 
+    core.error(format(message)); 
   },
 
   group: (name: string, fn: () => void | Promise<void>) => {
