@@ -1,0 +1,37 @@
+# Example workflow for repositories that want to report contributions.
+# Copy it to `.github/workflows/contribution-tracker.yml` in the consuming repo.
+#
+# Required setup in the consuming repo (or at org level to share across repos):
+#   - Variable `APICURON_RESOURCE_ID`: the resource contributions are credited to.
+#     Repos that feed the same resource (e.g. a server and its UI) use the same value.
+#   - Secret `APICURON_API_TOKEN`: token used to authenticate against the API.
+#   - Variable `APICURON_API_URL` (optional): override the default API endpoint.
+name: Track Contributions
+
+on:
+  # `pull_request_target` instead of `pull_request`: PRs opened from forks do
+  # not receive secrets under `pull_request`, so the API token would be empty.
+  # This is safe here because the PR's code is never checked out or executed.
+  # Do NOT add an `actions/checkout` of the PR head to this workflow.
+  pull_request_target:
+    types:
+      - closed
+
+permissions:
+  pull-requests: read
+
+jobs:
+  track:
+    name: Report merged pull request
+    # Skip closed-but-not-merged PRs without spinning up the action.
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Report contribution
+        uses: Mehdi-SK/contribution-event-tracker@v1
+        with:
+          resource-id: ${{ vars.APICURON_RESOURCE_ID }}
+          api-token: ${{ secrets.APICURON_API_TOKEN }}
+          api-url: ${{ vars.APICURON_API_URL }}
+          # github-token defaults to the workflow's GITHUB_TOKEN

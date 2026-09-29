@@ -32,11 +32,8 @@ async function run() {
       `Found ${pulls.length} pull requests. Fetching reviews for each...\n`
     )
 
-    const allReviews: {
-      pullNumber: number
-      title: string
-      reviews: TReview[]
-    }[] = []
+    const allReviews: { pullNumber: number; title: string; reviews: TReview[] }[] =
+      []
 
     for (const pr of pulls) {
       console.log(`Fetching reviews for PR #${pr.number} (${pr.title})...`)
