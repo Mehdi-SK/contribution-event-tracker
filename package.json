@@ -22,7 +22,11 @@
     "package": "npx rimraf ./dist && npx rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "package:watch": "npm run package -- --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest --passWithNoTests",
-    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
+    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package",
+    "schema:data": "ts-json-schema-generator -p types/events/github/pull-request.types.ts -t TPullRequestData -f tsconfig.json --additional-properties -o schemas/github/pull_request/v1.json",
+    "schema:envelope": "ts-json-schema-generator -p types/events/shared/envelope.types.ts -t TAnyEventEnvelope -f tsconfig.json --additional-properties -o schemas/envelope.json",
+    "schema:strict": "ts-json-schema-generator -p types/events/github/pull-request.types.ts -t TPullRequestData -f tsconfig.json -o test/schemas/pull_request.strict.json",
+    "schema": "npm run schema:data && npm run schema:envelope && npm run schema:strict"
   },
   "license": "MIT",
   "dependencies": {
@@ -55,6 +59,7 @@
     "rollup": "^4.57.1",
     "ts-jest": "^29.4.6",
     "ts-jest-resolver": "^2.0.1",
+    "ts-json-schema-generator": "^2.9.0",
     "typescript": "^5.9.3"
   },
   "optionalDependencies": {
