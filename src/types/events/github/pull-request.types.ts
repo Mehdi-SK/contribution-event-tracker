@@ -5,6 +5,7 @@ import { TGithubAccount } from './gh-account.types.js'
 import { GithubEventTypes } from './gh-event.types.js'
 import { TGithubRepositoryRef } from './gh-repository.types.js'
 import { TGithubIssueTarget } from './gh-targets.types.js'
+import { GithubDataSchemas } from './schemas.js'
 
 export interface TPullRequestRelationship extends TRelationship<
   'closes',
@@ -67,5 +68,5 @@ export interface TPullRequestData {
 
 export type TPullRequestMergedEvent = TEventEnvelope<
   typeof GithubEventTypes.PULL_REQUEST_MERGED,
-  TPullRequestData
->
+  TPullRequestData 
+> & { dataschema: typeof GithubDataSchemas.PULL_REQUEST_V1 }
