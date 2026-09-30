@@ -6,10 +6,10 @@ import { GithubEventTypes } from './gh-event.types.js'
 import { TGithubRepositoryRef } from './gh-repository.types.js'
 import { TGithubIssueTarget } from './gh-targets.types.js'
 
-export type TPullRequestRelationship = TRelationship<
+export interface TPullRequestRelationship extends TRelationship<
   'closes',
   TGithubIssueTarget
->
+> {}
 
 // 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED'
 export const ReviewState = {
@@ -31,11 +31,13 @@ export type TPullRequestActivity =
   | (TActivityBase & {
       kind: 'reviewed'
       state: TReviewState
+      object_id: string
       url: string
     })
   | (TActivityBase & {
       kind: 'commented'
       channel: 'conversation' | 'review_thread'
+      object_id: string
       url: string
     })
   | (TActivityBase & { kind: 'merged' })
@@ -44,6 +46,9 @@ export interface TPullRequestData {
   repository: TGithubRepositoryRef
   pull_request: {
     id: string
+    /**
+     * @asType integer
+     */
     number: number
     url: string
     title: string
@@ -54,6 +59,7 @@ export interface TPullRequestData {
     merged: boolean
     labels: string[]
   }
+  /** @minItems 1 */
   activities: TPullRequestActivity[]
   relationships: TPullRequestRelationship[]
   capture: TCapture
