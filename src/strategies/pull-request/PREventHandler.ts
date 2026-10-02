@@ -1,5 +1,5 @@
 import { PRPayload } from '../../types/contribution-payload.type.js'
-import { GHPullRequestPayload } from '../../types/payloads/payload.types.js'
+import { GHPullRequestPayload } from '../../types/payload/payload.types.js'
 
 export interface IPRActionHandler {
   canHandle(payload: GHPullRequestPayload, action?: string): boolean

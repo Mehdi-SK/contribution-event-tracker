@@ -3,7 +3,7 @@ import {
   EventTypes,
   PRPayload
 } from '../../../types/contribution-payload.type.js'
-import { GHPullRequestPayload } from '../../../types/payloads/payload.types.js'
+import { GHPullRequestPayload } from '../../../types/payload/payload.types.js'
 import { IPRActionHandler } from '../PREventHandler.js'
 import { getPullRequestReviewers } from '../shared/extract-reviewers.js'
 

@@ -1,51 +1,67 @@
 import * as github from '@actions/github'
-import { logger } from '../../logger/logger.js'
-import { TReview } from '../../types/contribution-payload.type.js'
 
 export class GitHubClient {
-  private static octokit: ReturnType<typeof github.getOctokit>
-
-  static initialize(token: string): void {
+  private octokit: ReturnType<typeof github.getOctokit>
+  constructor(token: string) {
     this.octokit = github.getOctokit(token)
   }
-
-  static async getPRReviews(
-    owner: string,
-    repo: string,
-    pullNumber: number
-  ): Promise<TReview[]> {
-    const data = await this.octokit.paginate(
-      this.octokit.rest.pulls.listReviews,
-      {
-        owner,
-        repo,
-        pull_number: pullNumber,
-        per_page: 100
-      }
-    )
-
+  async getPullRequest(owner: string, repo: string, number: number) {
+    const { data } = await this.octokit.rest.pulls.get({
+      owner,
+      repo,
+      pull_number: number
+    })
     return data
-      .filter(
-        (
-          review
-        ): review is typeof review & {
-          user: NonNullable<(typeof review)['user']> // Ensure that the user is neither null nor undefined
-        } => {
-          if (review.user) {
-            return true
+  }
+
+  listReviews(owner: string, repo: string, number: number) {
+    return this.octokit.paginate(this.octokit.rest.pulls.listReviews, {
+      owner,
+      repo,
+      pull_number: number,
+      per_page: 100
+    })
+  }
+
+  listIssueComments(owner: string, repo: string, number: number) {
+    return this.octokit.paginate(this.octokit.rest.issues.listComments, {
+      owner,
+      repo,
+      issue_number: number,
+      per_page: 100
+    })
+  }
+
+  listReviewComments(owner: string, repo: string, number: number) {
+    return this.octokit.paginate(this.octokit.rest.pulls.listReviewComments, {
+      owner,
+      repo,
+      pull_number: number,
+      per_page: 100
+    })
+  }
+
+  async getClosingIssues(owner: string, repo: string, number: number) {
+    const CLOSING_ISSUES_QUERY = `
+    query($owner: String!, $repo: String!, $number: Int!) {
+      repository(owner: $owner, name: $repo) {
+        pullRequest(number: $number) {
+          closingIssuesReferences(first: 50) {
+            nodes {
+              number
+              url
+              repository { databaseId nameWithOwner url }
+              labels(first: 50) { nodes { name } }
+            }
           }
-          logger.info(
-            `Review without user found. Skipping this review. ${JSON.stringify(review)}`
-          )
-          return false
         }
-      )
-      .map((review) => {
-        return {
-          username: review.user.login,
-          state: review.state,
-          submitted_at: review.submitted_at || Date.now().toString()
-        }
-      })
+      }
+    }`
+    const res: any = await this.octokit.graphql(CLOSING_ISSUES_QUERY, {
+      owner,
+      repo,
+      number
+    })
+    return res.repository?.pullRequest?.closingIssuesReferences?.nodes ?? []
   }
 }

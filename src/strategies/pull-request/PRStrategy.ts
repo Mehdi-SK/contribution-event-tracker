@@ -1,6 +1,6 @@
 import { logger } from '../../logger/logger.js'
 import { ContributionPayload as TContributionPayload } from '../../types/contribution-payload.type.js'
-import { GHPullRequestPayload } from '../../types/payloads/payload.types.js'
+import { GHPullRequestPayload } from '../../types/payload/payload.types.js'
 import { IEventProcessorStrategy } from '../IEventProcessorStrategy.js'
 import { PRMergedEventHandler } from './handlers/PRMergedEventHandler.js'
 import { IPRActionHandler } from './PREventHandler.js'
