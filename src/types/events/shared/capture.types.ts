@@ -1,6 +1,6 @@
 export const CaptureMode = {
-  Live: 'live',
-  Backfill: 'backfill'
+  LIVE: 'live',
+  BACKFILL: 'backfill'
 } as const
 
 export type TCaptureMode = (typeof CaptureMode)[keyof typeof CaptureMode]
