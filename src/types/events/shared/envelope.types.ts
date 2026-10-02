@@ -9,3 +9,4 @@ export interface TEventEnvelope<TType extends string, TData> {
   dataschema: string
   data: TData
 }
+export interface TAnyEventEnvelope extends TEventEnvelope<string, unknown> {}

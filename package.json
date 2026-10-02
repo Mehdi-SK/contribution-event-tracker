@@ -1,7 +1,7 @@
 {
   "name": "contribution-harvester",
   "description": "A GitHub Action to capture and standardize contributions then send them to a specified endpoint.",
-  "version": "0.0.1",
+  "version": "0.3.1",
   "author": "",
   "type": "module",
   "private": true,
