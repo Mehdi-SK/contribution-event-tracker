@@ -1,5 +1,11 @@
 import * as github from '@actions/github'
 
+export interface TClosingIssueNode {
+  number: number
+  url: string
+  repository: { databaseId: number; nameWithOwner: string; url: string } | null
+  labels: { nodes: { name: string }[] }
+}
 export class GitHubClient {
   private octokit: ReturnType<typeof github.getOctokit>
   constructor(token: string) {
@@ -57,11 +63,16 @@ export class GitHubClient {
         }
       }
     }`
-    const res: any = await this.octokit.graphql(CLOSING_ISSUES_QUERY, {
-      owner,
-      repo,
-      number
-    })
-    return res.repository?.pullRequest?.closingIssuesReferences?.nodes ?? []
+    const res = await this.octokit.graphql<{
+      repository: {
+        pullRequest: {
+          closingIssuesReferences: { nodes: (TClosingIssueNode | null)[] }
+        } | null
+      } | null
+    }>(CLOSING_ISSUES_QUERY, { owner, repo, number })
+
+    return (
+      res.repository?.pullRequest?.closingIssuesReferences.nodes ?? []
+    ).filter((n): n is TClosingIssueNode => n !== null)
   }
 }
