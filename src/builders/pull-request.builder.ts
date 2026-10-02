@@ -70,7 +70,8 @@ export function buildPullRequestEvent(
         at: c.created_at,
         channel,
         object_id: String(c.id),
-        url: c.html_url
+        url: c.html_url,
+        ...(c.review_id !== undefined && { review_object_id: String(c.review_id) })
       })
     }
   }

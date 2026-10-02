@@ -46,7 +46,7 @@ export async function fetchPullRequestSnapshot(
       html_url: r.html_url
     })),
     issue_comments: issueComments.map(toComment),
-    review_comments: reviewComments.map(toComment),
+    review_comments: reviewComments.map((c) => ({ ...toComment(c), review_id: c.pull_request_review_id ?? undefined })),
     closing_issues: closingIssues
   }
 }

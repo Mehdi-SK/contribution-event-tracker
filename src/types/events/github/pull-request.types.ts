@@ -40,6 +40,7 @@ export type TPullRequestActivity =
       channel: 'conversation' | 'review_thread'
       object_id: string
       url: string
+      review_object_id?: string
     })
   | (TActivityBase & { kind: 'merged' })
 
@@ -68,5 +69,5 @@ export interface TPullRequestData {
 
 export type TPullRequestMergedEvent = TEventEnvelope<
   typeof GithubEventTypes.PULL_REQUEST_MERGED,
-  TPullRequestData 
+  TPullRequestData
 > & { dataschema: typeof GithubDataSchemas.PULL_REQUEST_V1 }
