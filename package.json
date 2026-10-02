@@ -26,7 +26,8 @@
     "schema:data": "ts-json-schema-generator -p types/events/github/pull-request.types.ts -t TPullRequestData -f tsconfig.json --additional-properties -o schemas/github/pull_request/v1.json",
     "schema:envelope": "ts-json-schema-generator -p types/events/shared/envelope.types.ts -t TAnyEventEnvelope -f tsconfig.json --additional-properties -o schemas/envelope.json",
     "schema:strict": "ts-json-schema-generator -p types/events/github/pull-request.types.ts -t TPullRequestData -f tsconfig.json -o test/schemas/pull_request.strict.json",
-    "schema": "npm run schema:data && npm run schema:envelope && npm run schema:strict"
+    "schema": "npm run schema:data && npm run schema:envelope && npm run schema:strict",
+    "backfill": "tsx --env-file=.env src/scripts/backfill.ts"
   },
   "license": "MIT",
   "dependencies": {
@@ -61,6 +62,7 @@
     "ts-jest": "^29.4.6",
     "ts-jest-resolver": "^2.0.1",
     "ts-json-schema-generator": "^2.9.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   },
   "optionalDependencies": {
