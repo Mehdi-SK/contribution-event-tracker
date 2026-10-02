@@ -75,4 +75,10 @@ export class GitHubClient {
       res.repository?.pullRequest?.closingIssuesReferences.nodes ?? []
     ).filter((n): n is TClosingIssueNode => n !== null)
   }
+
+  listClosedPullRequests(owner: string, repo: string) {
+    return this.octokit.paginate.iterator(this.octokit.rest.pulls.list, {
+      owner, repo, state: 'closed', per_page: 100,
+    })
+  }
 }
