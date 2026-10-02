@@ -10,7 +10,7 @@ export interface TGithubRepositorySnapshot {
   html_url: string
 }
 
-interface TCommentSnapshot {
+export interface TCommentSnapshot {
   id: number
   user: TGithubUserSnapshot | null
   created_at: string
@@ -48,4 +48,11 @@ export interface TPullRequestSnapshot {
     html_url: string
     labels: string[]
   }[]
+}
+
+export interface TClosingIssueSnapshot {
+  repository: TGithubRepositorySnapshot
+  number: number
+  html_url: string
+  labels: string[]
 }
