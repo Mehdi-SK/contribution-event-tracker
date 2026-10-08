@@ -4,9 +4,17 @@ description:
 author: 'your-name'
 
 inputs:
-  github-token:
-    description: 'GitHub token for API calls'
-    required: true
+  apicuron-url:
+    description: APICURON API base URL
+    required: false
+    default: 'https://apicuron.org/api'
+  apicuron-token:
+    description: Token of a user managing the linked APICURON resource (store as a repository secret)
+    required: false
+  dry-run:
+    description: Build and log the event without sending it
+    required: false
+    default: 'false'
 
 runs:
   using: node24
