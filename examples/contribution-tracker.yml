@@ -1,16 +1,15 @@
 # Example workflow for repositories that want to report contributions.
 # Copy it to `.github/workflows/contribution-tracker.yml` in the consuming repo.
 #
-# Required setup in the consuming repo (or at org level to share across repos):
-#   - Variable `APICURON_RESOURCE_ID`: the resource contributions are credited to.
-#     Repos that feed the same resource (e.g. a server and its UI) use the same value.
-#   - Secret `APICURON_API_TOKEN`: token used to authenticate against the API.
-#   - Variable `APICURON_API_URL` (optional): override the default API endpoint.
-name: Track Contributions
+# Required setup in the consuming repo:
+#   - The repository must be linked to a resource in APICURON by the APICURON
+#     maintainers.
+#   - Secret `APICURON_TOKEN`: token of a user who manages that resource.
+name: Track contributions
 
 on:
   # `pull_request_target` instead of `pull_request`: PRs opened from forks do
-  # not receive secrets under `pull_request`, so the API token would be empty.
+  # not receive secrets under `pull_request`, so the token would be empty.
   # This is safe here because the PR's code is never checked out or executed.
   # Do NOT add an `actions/checkout` of the PR head to this workflow.
   pull_request_target:
@@ -19,6 +18,7 @@ on:
 
 permissions:
   pull-requests: read
+  issues: read
 
 jobs:
   track:
@@ -29,9 +29,8 @@ jobs:
 
     steps:
       - name: Report contribution
-        uses: Mehdi-SK/contribution-event-tracker@v1
+        uses: Mehdi-SK/contribution-event-tracker@main
         with:
-          resource-id: ${{ vars.APICURON_RESOURCE_ID }}
-          api-token: ${{ secrets.APICURON_API_TOKEN }}
-          api-url: ${{ vars.APICURON_API_URL }}
+          apicuron-token: ${{ secrets.APICURON_TOKEN }}
           # github-token defaults to the workflow's GITHUB_TOKEN
+          # dry-run: true # build and log the event without sending it
