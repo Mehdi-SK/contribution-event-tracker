@@ -1,104 +1,18 @@
 import { describe, expect, it } from '@jest/globals'
+import {
+  AFTER_CLOSE,
+  BEFORE_CLOSE,
+  CLOSED_AT,
+  CREATED_AT,
+  bot,
+  capture,
+  comment,
+  makeSnapshot,
+  review,
+  reviewer
+} from '../__fixtures__/pull-request.snapshot.js'
 import { buildPullRequestEvent } from '../src/builders/pull-request.builder.js'
 import { GithubDataSchemas } from '../src/types/events/github/schemas.js'
-import { TCapture } from '../src/types/events/shared/capture.types.js'
-import {
-  TGithubUserSnapshot,
-  TPullRequestSnapshot
-} from '../src/types/snapshot.types.js'
-
-const CREATED_AT = '2026-09-10T08:00:00Z'
-const CLOSED_AT = '2026-09-11T12:56:34Z'
-const BEFORE_CLOSE = '2026-09-11T12:56:33Z'
-const AFTER_CLOSE = '2026-09-11T12:56:35Z'
-
-const PR_URL = 'https://github.com/BioComputingUP/disprot/pull/127'
-
-const capture: TCapture = {
-  tool: 'contribution-event-tracker',
-  version: '0.0.0-test',
-  mode: 'live',
-  observed_at: '2026-09-11T13:00:00Z'
-}
-
-const author: TGithubUserSnapshot = {
-  id: 70889826,
-  login: 'geekn0rd',
-  type: 'User'
-}
-const reviewer: TGithubUserSnapshot = { id: 1001, login: 'alice', type: 'User' }
-const merger: TGithubUserSnapshot = { id: 1002, login: 'bob', type: 'User' }
-const bot: TGithubUserSnapshot = {
-  id: 9001,
-  login: 'dependabot[bot]',
-  type: 'Bot'
-}
-
-type TSnapshotOverrides = Partial<
-  Omit<TPullRequestSnapshot, 'pull_request'>
-> & {
-  pull_request?: Partial<TPullRequestSnapshot['pull_request']>
-}
-
-/** A valid merged-PR snapshot; each test overrides only what it needs. */
-function makeSnapshot(
-  overrides: TSnapshotOverrides = {}
-): TPullRequestSnapshot {
-  const { pull_request, ...rest } = overrides
-  return {
-    repository: {
-      id: 1171533853,
-      full_name: 'BioComputingUP/disprot',
-      html_url: 'https://github.com/BioComputingUP/disprot'
-    },
-    pull_request: {
-      id: 555000127,
-      number: 127,
-      html_url: PR_URL,
-      title: 'Fix annotation export',
-      base_ref: 'main',
-      is_cross_repository: false,
-      created_at: CREATED_AT,
-      closed_at: CLOSED_AT,
-      merged: true,
-      labels: [],
-      user: author,
-      merged_by: merger,
-      ...pull_request
-    },
-    reviews: [],
-    issue_comments: [],
-    review_comments: [],
-    closing_issues: [],
-    ...rest
-  }
-}
-
-const review = (
-  id: number,
-  user: TGithubUserSnapshot | null,
-  submitted_at: string | null,
-  state = 'APPROVED'
-): TPullRequestSnapshot['reviews'][number] => ({
-  id,
-  user,
-  state,
-  submitted_at,
-  html_url: `${PR_URL}#pullrequestreview-${id}`
-})
-
-const comment = (
-  id: number,
-  user: TGithubUserSnapshot | null,
-  created_at: string,
-  review_id?: number
-): TPullRequestSnapshot['issue_comments'][number] => ({
-  id,
-  user,
-  created_at,
-  html_url: `${PR_URL}#comment-${id}`,
-  ...(review_id !== undefined && { review_id })
-})
 
 describe('buildPullRequestEvent', () => {
   it('builds the pinned event id and envelope', () => {
