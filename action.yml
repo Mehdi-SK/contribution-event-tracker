@@ -1,7 +1,7 @@
 name: 'Contribution Tracker'
 description:
   'Captures GitHub contribution events and emits a standardised payload'
-author: 'your-name'
+author: 'Mehdi-SK'
 
 inputs:
   github-token:
