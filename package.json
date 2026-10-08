@@ -1,21 +1,18 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
-  "author": "",
-  "type": "module",
-  "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
+  "name": "contribution-event-tracker",
+  "description": "A GitHub Action to capture and standardize contributions then send them to a specified endpoint.",
+  "version": "0.3.1",
+  "author": "Mehdi-SK",
+  "homepage": "https://github.com/Mehdi-SK/contribution-event-tracker#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/Mehdi-SK/contribution-event-tracker.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/Mehdi-SK/contribution-event-tracker/issues"
   },
-  "keywords": [
-    "actions"
-  ],
+  "type": "module",
+  "private": true,
   "exports": {
     ".": "./dist/index.js"
   },
@@ -24,23 +21,30 @@
   },
   "scripts": {
     "bundle": "npm run format:write && npm run package",
-    "ci-test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest",
-    "coverage": "npx make-coverage-badge --output-path ./badges/coverage.svg",
+    "ci-test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest --passWithNoTests",
     "format:write": "npx prettier --write .",
     "format:check": "npx prettier --check .",
     "lint": "npx eslint .",
     "local-action": "npx @github/local-action . src/main.ts .env",
     "package": "npx rimraf ./dist && npx rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "package:watch": "npm run package -- --watch",
-    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest",
-    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
+    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest --passWithNoTests",
+    "all": "npm run format:write && npm run lint && npm run test && npm run package",
+    "schema:data": "ts-json-schema-generator -p src/types/events/github/pull-request.types.ts -t TPullRequestData -f tsconfig.json --additional-properties -o schemas/github/pull_request/v1.json",
+    "schema:envelope": "ts-json-schema-generator -p src/types/events/shared/envelope.types.ts -t TAnyEventEnvelope -f tsconfig.json --additional-properties -o schemas/envelope.json",
+    "schema:strict": "ts-json-schema-generator -p src/types/events/github/pull-request.types.ts -t TPullRequestData -f tsconfig.json -o test/schemas/pull_request.strict.json",
+    "schema": "npm run schema:data && npm run schema:envelope && npm run schema:strict",
+    "backfill": "tsx --env-file=.env src/scripts/backfill.ts"
   },
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^3.0.0"
+    "@actions/core": "^3.0.0",
+    "@actions/github": "^9.1.1",
+    "@octokit/webhooks": "^14.2.0",
+    "chalk": "^6.0.0",
+    "uuid": "^14.0.2"
   },
   "devDependencies": {
-    "@eslint/compat": "^2.0.2",
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^10.0.1",
     "@github/local-action": "^7.0.1",
@@ -51,16 +55,20 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.70.1",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest": "^29.15.0",
     "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.12.0",
     "jest": "^30.2.0",
-    "make-coverage-badge": "^1.2.0",
     "prettier": "^3.8.1",
+    "rimraf": "^6.1.3",
     "rollup": "^4.57.1",
     "ts-jest": "^29.4.6",
     "ts-jest-resolver": "^2.0.1",
+    "ts-json-schema-generator": "^2.9.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   },
   "optionalDependencies": {

@@ -1,0 +1,344 @@
+{
+  "$ref": "#/definitions/TPullRequestData",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "TCapture": {
+      "properties": {
+        "mode": {
+          "$ref": "#/definitions/TCaptureMode"
+        },
+        "observed_at": {
+          "type": "string"
+        },
+        "tool": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool",
+        "version",
+        "mode",
+        "observed_at"
+      ],
+      "type": "object"
+    },
+    "TCaptureMode": {
+      "enum": [
+        "live",
+        "backfill"
+      ],
+      "type": "string"
+    },
+    "TGithubAccount": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "login": {
+          "type": "string"
+        },
+        "system": {
+          "const": "github",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "login",
+        "system"
+      ],
+      "type": "object"
+    },
+    "TGithubIssueTarget": {
+      "properties": {
+        "kind": {
+          "const": "issue",
+          "type": "string"
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "number": {
+          "type": "number"
+        },
+        "repository": {
+          "$ref": "#/definitions/TGithubRepositoryRef"
+        },
+        "system": {
+          "const": "github",
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "system",
+        "kind",
+        "repository",
+        "number",
+        "url",
+        "labels"
+      ],
+      "type": "object"
+    },
+    "TGithubRepositoryRef": {
+      "properties": {
+        "full_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "full_name",
+        "url"
+      ],
+      "type": "object"
+    },
+    "TPullRequestActivity": {
+      "anyOf": [
+        {
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/TGithubAccount"
+            },
+            "at": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "opened",
+              "type": "string"
+            },
+            "object_id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "account",
+            "at",
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/TGithubAccount"
+            },
+            "at": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "reviewed",
+              "type": "string"
+            },
+            "object_id": {
+              "type": "string"
+            },
+            "state": {
+              "$ref": "#/definitions/TReviewState"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "account",
+            "at",
+            "kind",
+            "object_id",
+            "state",
+            "url"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/TGithubAccount"
+            },
+            "at": {
+              "type": "string"
+            },
+            "channel": {
+              "enum": [
+                "conversation",
+                "review_thread"
+              ],
+              "type": "string"
+            },
+            "kind": {
+              "const": "commented",
+              "type": "string"
+            },
+            "object_id": {
+              "type": "string"
+            },
+            "review_object_id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "account",
+            "at",
+            "channel",
+            "kind",
+            "object_id",
+            "url"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/TGithubAccount"
+            },
+            "at": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "merged",
+              "type": "string"
+            },
+            "object_id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "account",
+            "at",
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TPullRequestData": {
+      "properties": {
+        "activities": {
+          "items": {
+            "$ref": "#/definitions/TPullRequestActivity"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "capture": {
+          "$ref": "#/definitions/TCapture"
+        },
+        "pull_request": {
+          "properties": {
+            "base_ref": {
+              "type": "string"
+            },
+            "closed_at": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "is_cross_repository": {
+              "type": "boolean"
+            },
+            "labels": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "merged": {
+              "type": "boolean"
+            },
+            "number": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "number",
+            "url",
+            "title",
+            "base_ref",
+            "is_cross_repository",
+            "created_at",
+            "closed_at",
+            "merged",
+            "labels"
+          ],
+          "type": "object"
+        },
+        "relationships": {
+          "items": {
+            "$ref": "#/definitions/TPullRequestRelationship"
+          },
+          "type": "array"
+        },
+        "repository": {
+          "$ref": "#/definitions/TGithubRepositoryRef"
+        }
+      },
+      "required": [
+        "repository",
+        "pull_request",
+        "activities",
+        "relationships",
+        "capture"
+      ],
+      "type": "object"
+    },
+    "TPullRequestRelationship": {
+      "properties": {
+        "relation": {
+          "const": "closes",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/definitions/TGithubIssueTarget"
+        }
+      },
+      "required": [
+        "relation",
+        "target"
+      ],
+      "type": "object"
+    },
+    "TReviewState": {
+      "enum": [
+        "APPROVED",
+        "CHANGES_REQUESTED",
+        "COMMENTED",
+        "DISMISSED"
+      ],
+      "type": "string"
+    }
+  }
+}

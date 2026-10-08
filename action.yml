@@ -1,23 +1,26 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: 'Contribution Tracker'
+description:
+  'Captures GitHub contribution events and emits a standardised payload'
+author: 'Mehdi-SK'
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
-branding:
-  icon: heart
-  color: red
-
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
-    required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: Your output description here
+  github-token:
+    description: GitHub token used to read the pull request
+    required: false
+    default: ${{ github.token }}
+  apicuron-url:
+    description: APICURON API base URL
+    required: false
+    default: 'https://apicuron.org/api'
+  apicuron-token:
+    description:
+      Token of a user managing the linked APICURON resource (store as a
+      repository secret)
+    required: false
+  dry-run:
+    description: Build and log the event without sending it
+    required: false
+    default: 'false'
 
 runs:
   using: node24

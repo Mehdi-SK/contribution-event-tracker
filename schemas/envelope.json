@@ -1,0 +1,49 @@
+{
+  "$ref": "#/definitions/TAnyEventEnvelope",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "TAnyEventEnvelope": {
+      "properties": {
+        "data": {},
+        "datacontenttype": {
+          "const": "application/json",
+          "type": "string"
+        },
+        "dataschema": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "specversion": {
+          "const": "1.0",
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "data",
+        "datacontenttype",
+        "dataschema",
+        "id",
+        "source",
+        "specversion",
+        "subject",
+        "time",
+        "type"
+      ],
+      "type": "object"
+    }
+  }
+}
