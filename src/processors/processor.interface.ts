@@ -3,7 +3,7 @@ import { GHPullRequestPayload } from '../types/payload/payload.types.js'
 
 export interface IEventProcessorStrategy {
   canHandle(event: string): boolean
-  process(payload: any): Promise<TTrackerEvent[]>
+  process(payload: unknown): Promise<TTrackerEvent[]>
 }
 
 export interface IPRActionHandler {
