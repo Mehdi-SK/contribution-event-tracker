@@ -23733,11 +23733,11 @@ function requireUtil$i () {
 	return util$i;
 }
 
-var parse$4;
+var parse$5;
 var hasRequiredParse$2;
 
 function requireParse$2 () {
-	if (hasRequiredParse$2) return parse$4;
+	if (hasRequiredParse$2) return parse$5;
 	hasRequiredParse$2 = 1;
 
 	const { maxNameValuePairSize, maxAttributeValueSize } = requireConstants$b();
@@ -24051,11 +24051,11 @@ function requireParse$2 () {
 	  return parseUnparsedAttributes(unparsedAttributes, cookieAttributeList)
 	}
 
-	parse$4 = {
+	parse$5 = {
 	  parseSetCookie,
 	  parseUnparsedAttributes
 	};
-	return parse$4;
+	return parse$5;
 }
 
 var cookies$2;
@@ -51933,11 +51933,11 @@ function requireUtil$a () {
 	return util$a;
 }
 
-var parse$3;
+var parse$4;
 var hasRequiredParse$1;
 
 function requireParse$1 () {
-	if (hasRequiredParse$1) return parse$3;
+	if (hasRequiredParse$1) return parse$4;
 	hasRequiredParse$1 = 1;
 
 	const { maxNameValuePairSize, maxAttributeValueSize } = requireConstants$6();
@@ -52251,11 +52251,11 @@ function requireParse$1 () {
 	  return parseUnparsedAttributes(unparsedAttributes, cookieAttributeList)
 	}
 
-	parse$3 = {
+	parse$4 = {
 	  parseSetCookie,
 	  parseUnparsedAttributes
 	};
-	return parse$3;
+	return parse$4;
 }
 
 var cookies$1;
@@ -56577,7 +56577,7 @@ function expand$1(template, context) {
 }
 
 // pkg/dist-src/parse.js
-function parse$2(options) {
+function parse$3(options) {
   let method = options.method.toUpperCase();
   let url = (options.url || "/").replace(/:([a-z]\w+)/g, "{$1}");
   let headers = Object.assign({}, options.headers);
@@ -56643,7 +56643,7 @@ function parse$2(options) {
 
 // pkg/dist-src/endpoint-with-defaults.js
 function endpointWithDefaults$1(defaults, route, options) {
-  return parse$2(merge$1(defaults, route, options));
+  return parse$3(merge$1(defaults, route, options));
 }
 
 // pkg/dist-src/with-defaults.js
@@ -56654,7 +56654,7 @@ function withDefaults$4(oldDefaults, newDefaults) {
     DEFAULTS: DEFAULTS2,
     defaults: withDefaults$4.bind(null, DEFAULTS2),
     merge: merge$1.bind(null, DEFAULTS2),
-    parse: parse$2
+    parse: parse$3
   });
 }
 
@@ -57536,7 +57536,7 @@ function expand(template, context) {
 }
 
 // pkg/dist-src/parse.js
-function parse$1(options) {
+function parse$2(options) {
   let method = options.method.toUpperCase();
   let url = (options.url || "/").replace(/:([a-z]\w+)/g, "{$1}");
   let headers = Object.assign({}, options.headers);
@@ -57602,7 +57602,7 @@ function parse$1(options) {
 
 // pkg/dist-src/endpoint-with-defaults.js
 function endpointWithDefaults(defaults, route, options) {
-  return parse$1(merge(defaults, route, options));
+  return parse$2(merge(defaults, route, options));
 }
 
 // pkg/dist-src/with-defaults.js
@@ -57613,7 +57613,7 @@ function withDefaults$2(oldDefaults, newDefaults) {
     DEFAULTS: DEFAULTS2,
     defaults: withDefaults$2.bind(null, DEFAULTS2),
     merge: merge.bind(null, DEFAULTS2),
-    parse: parse$1
+    parse: parse$2
   });
 }
 
@@ -84341,11 +84341,11 @@ function requireUtil$2 () {
 	return util$2;
 }
 
-var parse;
+var parse$1;
 var hasRequiredParse;
 
 function requireParse () {
-	if (hasRequiredParse) return parse;
+	if (hasRequiredParse) return parse$1;
 	hasRequiredParse = 1;
 
 	const { maxNameValuePairSize, maxAttributeValueSize } = requireConstants$1();
@@ -84659,11 +84659,11 @@ function requireParse () {
 	  return parseUnparsedAttributes(unparsedAttributes, cookieAttributeList)
 	}
 
-	parse = {
+	parse$1 = {
 	  parseSetCookie,
 	  parseUnparsedAttributes
 	};
-	return parse;
+	return parse$1;
 }
 
 var cookies;
@@ -89438,15 +89438,429 @@ class GitHubClient {
     }
     listClosedPullRequests(owner, repo) {
         return this.octokit.paginate.iterator(this.octokit.rest.pulls.list, {
-            owner, repo, state: 'closed', per_page: 100,
+            owner,
+            repo,
+            state: 'closed',
+            per_page: 100
         });
+    }
+}
+
+const GithubEventTypes = {
+    PULL_REQUEST_MERGED: 'it.unipd.biocomputingup.github.pull_request.merged'
+    // PULL_REQUEST_CLOSED: 'it.unipd.biocomputingup.github.pull_request.closed',
+};
+
+const SCHEMA_BASE = 'https://w3id.org/biocomputingup/tracker/schemas';
+const GithubDataSchemas = {
+    PULL_REQUEST_V1: `${SCHEMA_BASE}/github/pull_request/v1.json`
+};
+
+var REGEX = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/i;
+
+function validate(uuid) {
+    return typeof uuid === 'string' && REGEX.test(uuid);
+}
+
+function parse(uuid) {
+    if (!validate(uuid)) {
+        throw TypeError('Invalid UUID');
+    }
+    let v;
+    return Uint8Array.of((v = parseInt(uuid.slice(0, 8), 16)) >>> 24, (v >>> 16) & 0xff, (v >>> 8) & 0xff, v & 0xff, (v = parseInt(uuid.slice(9, 13), 16)) >>> 8, v & 0xff, (v = parseInt(uuid.slice(14, 18), 16)) >>> 8, v & 0xff, (v = parseInt(uuid.slice(19, 23), 16)) >>> 8, v & 0xff, ((v = parseInt(uuid.slice(24, 36), 16)) / 0x10000000000) & 0xff, (v / 0x100000000) & 0xff, (v >>> 24) & 0xff, (v >>> 16) & 0xff, (v >>> 8) & 0xff, v & 0xff);
+}
+
+const byteToHex = [];
+for (let i = 0; i < 256; ++i) {
+    byteToHex.push((i + 0x100).toString(16).slice(1));
+}
+function unsafeStringify(arr, offset = 0) {
+    return (byteToHex[arr[offset + 0]] +
+        byteToHex[arr[offset + 1]] +
+        byteToHex[arr[offset + 2]] +
+        byteToHex[arr[offset + 3]] +
+        '-' +
+        byteToHex[arr[offset + 4]] +
+        byteToHex[arr[offset + 5]] +
+        '-' +
+        byteToHex[arr[offset + 6]] +
+        byteToHex[arr[offset + 7]] +
+        '-' +
+        byteToHex[arr[offset + 8]] +
+        byteToHex[arr[offset + 9]] +
+        '-' +
+        byteToHex[arr[offset + 10]] +
+        byteToHex[arr[offset + 11]] +
+        byteToHex[arr[offset + 12]] +
+        byteToHex[arr[offset + 13]] +
+        byteToHex[arr[offset + 14]] +
+        byteToHex[arr[offset + 15]]).toLowerCase();
+}
+
+function stringToBytes(str) {
+    str = unescape(encodeURIComponent(str));
+    const bytes = new Uint8Array(str.length);
+    for (let i = 0; i < str.length; ++i) {
+        bytes[i] = str.charCodeAt(i);
+    }
+    return bytes;
+}
+const DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+const URL$1 = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
+function v35(version, hash, value, namespace, buf, offset) {
+    const valueBytes = typeof value === 'string' ? stringToBytes(value) : value;
+    const namespaceBytes = typeof namespace === 'string' ? parse(namespace) : namespace;
+    if (typeof namespace === 'string') {
+        namespace = parse(namespace);
+    }
+    if (namespace?.length !== 16) {
+        throw TypeError('Namespace must be array-like (16 iterable integer values, 0-255)');
+    }
+    let bytes = new Uint8Array(16 + valueBytes.length);
+    bytes.set(namespaceBytes);
+    bytes.set(valueBytes, namespaceBytes.length);
+    bytes = hash(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | version;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    if (buf) {
+        offset ??= 0;
+        if (offset < 0 || offset + 16 > buf.length) {
+            throw new RangeError(`UUID byte range ${offset}:${offset + 15} is out of buffer bounds`);
+        }
+        for (let i = 0; i < 16; ++i) {
+            buf[offset + i] = bytes[i];
+        }
+        return buf;
+    }
+    return unsafeStringify(bytes);
+}
+
+function f(s, x, y, z) {
+    switch (s) {
+        case 0:
+            return (x & y) ^ (~x & z);
+        case 1:
+            return x ^ y ^ z;
+        case 2:
+            return (x & y) ^ (x & z) ^ (y & z);
+        case 3:
+            return x ^ y ^ z;
+    }
+}
+function ROTL(x, n) {
+    return (x << n) | (x >>> (32 - n));
+}
+function sha1(bytes) {
+    const K = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6];
+    const H = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
+    const newBytes = new Uint8Array(bytes.length + 1);
+    newBytes.set(bytes);
+    newBytes[bytes.length] = 0x80;
+    bytes = newBytes;
+    const l = bytes.length / 4 + 2;
+    const N = Math.ceil(l / 16);
+    const M = new Array(N);
+    for (let i = 0; i < N; ++i) {
+        const arr = new Uint32Array(16);
+        for (let j = 0; j < 16; ++j) {
+            arr[j] =
+                (bytes[i * 64 + j * 4] << 24) |
+                    (bytes[i * 64 + j * 4 + 1] << 16) |
+                    (bytes[i * 64 + j * 4 + 2] << 8) |
+                    bytes[i * 64 + j * 4 + 3];
+        }
+        M[i] = arr;
+    }
+    M[N - 1][14] = ((bytes.length - 1) * 8) / 2 ** 32;
+    M[N - 1][14] = Math.floor(M[N - 1][14]);
+    M[N - 1][15] = ((bytes.length - 1) * 8) & 0xffffffff;
+    for (let i = 0; i < N; ++i) {
+        const W = new Uint32Array(80);
+        for (let t = 0; t < 16; ++t) {
+            W[t] = M[i][t];
+        }
+        for (let t = 16; t < 80; ++t) {
+            W[t] = ROTL(W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16], 1);
+        }
+        let a = H[0];
+        let b = H[1];
+        let c = H[2];
+        let d = H[3];
+        let e = H[4];
+        for (let t = 0; t < 80; ++t) {
+            const s = Math.floor(t / 20);
+            const T = (ROTL(a, 5) + f(s, b, c, d) + e + K[s] + W[t]) >>> 0;
+            e = d;
+            d = c;
+            c = ROTL(b, 30) >>> 0;
+            b = a;
+            a = T;
+        }
+        H[0] = (H[0] + a) >>> 0;
+        H[1] = (H[1] + b) >>> 0;
+        H[2] = (H[2] + c) >>> 0;
+        H[3] = (H[3] + d) >>> 0;
+        H[4] = (H[4] + e) >>> 0;
+    }
+    return Uint8Array.of(H[0] >> 24, H[0] >> 16, H[0] >> 8, H[0], H[1] >> 24, H[1] >> 16, H[1] >> 8, H[1], H[2] >> 24, H[2] >> 16, H[2] >> 8, H[2], H[3] >> 24, H[3] >> 16, H[3] >> 8, H[3], H[4] >> 24, H[4] >> 16, H[4] >> 8, H[4]);
+}
+
+function v5(value, namespace, buf, offset) {
+    return v35(0x50, sha1, value, namespace, buf, offset);
+}
+v5.DNS = DNS;
+v5.URL = URL$1;
+
+// The namespace and the name format below must never change: the id is how
+// live capture, backfill and re-sent events are recognised as the same event.
+const TRACKER_NAMESPACE = 'abe70222-8b1c-4ff1-84be-d290a6b88202';
+const buildEventId = (repositoryId, number, type, closedAt) => v5(`${repositoryId}:pull_request:${number}:${type}:${closedAt}`, TRACKER_NAMESPACE);
+
+const isHuman = (u) => !!u && u.type !== 'Bot';
+const toAccount = (u) => ({
+    system: 'github',
+    id: String(u.id),
+    login: u.login
+});
+// Activity after the PR was closed is excluded, so live capture and a later
+// backfill build the same event.
+const occurredBy = (cutoff) => {
+    const cutoffMs = Date.parse(cutoff);
+    return (at) => !!at && Date.parse(at) <= cutoffMs;
+};
+
+const REVIEW_STATES = new Set([
+    'APPROVED',
+    'CHANGES_REQUESTED',
+    'COMMENTED',
+    'DISMISSED'
+]);
+function buildPullRequestEvent(s, capture) {
+    const pr = s.pull_request;
+    if (!pr.merged)
+        return null; // TODO: implement closed-unmerged
+    const beforeClose = occurredBy(pr.closed_at);
+    // ======= Activities ========
+    const activities = [];
+    if (isHuman(pr.user)) {
+        activities.push({
+            kind: 'opened',
+            account: toAccount(pr.user),
+            at: pr.created_at
+        });
+    }
+    for (const review of s.reviews) {
+        if (
+        // ignore bot reviews, unknown review states, and reviews submitted after the PR was closed
+        !isHuman(review.user) ||
+            !REVIEW_STATES.has(review.state) ||
+            !beforeClose(review.submitted_at))
+            continue;
+        activities.push({
+            kind: 'reviewed',
+            account: toAccount(review.user),
+            at: review.submitted_at,
+            state: review.state, // already checked
+            object_id: String(review.id),
+            url: review.html_url
+        });
+    }
+    const pushComments = (list, channel) => {
+        for (const c of list) {
+            if (!isHuman(c.user) || !beforeClose(c.created_at))
+                continue;
+            activities.push({
+                kind: 'commented',
+                account: toAccount(c.user),
+                at: c.created_at,
+                channel,
+                object_id: String(c.id),
+                url: c.html_url,
+                ...(c.review_id !== undefined && {
+                    review_object_id: String(c.review_id)
+                })
+            });
+        }
+    };
+    pushComments(s.issue_comments, 'conversation');
+    pushComments(s.review_comments, 'review_thread');
+    if (isHuman(pr.merged_by)) {
+        activities.push({
+            kind: 'merged',
+            account: toAccount(pr.merged_by),
+            at: pr.closed_at
+        });
+    }
+    if (activities.length === 0)
+        return null;
+    // Deterministic order: API ordering is not guaranteed identical between runs
+    activities.sort((a, b) => a.at.localeCompare(b.at) ||
+        a.kind.localeCompare(b.kind) ||
+        (a.object_id ?? '').localeCompare(b.object_id ?? ''));
+    // ======= Relationships ========
+    const relationships = s.closing_issues
+        .map((i) => ({
+        relation: 'closes',
+        target: {
+            system: 'github',
+            kind: 'issue',
+            repository: {
+                id: String(i.repository.id),
+                full_name: i.repository.full_name,
+                url: i.repository.html_url
+            },
+            number: i.number,
+            url: i.html_url,
+            labels: [...i.labels].sort()
+        }
+    }))
+        .sort((a, b) => a.target.repository.id.localeCompare(b.target.repository.id) ||
+        a.target.number - b.target.number);
+    const repositoryId = String(s.repository.id); // for cloudEvents, the id type should be unified across all sources
+    const type = GithubEventTypes.PULL_REQUEST_MERGED;
+    return {
+        specversion: '1.0',
+        id: buildEventId(repositoryId, pr.number, type, pr.closed_at),
+        source: `github:repository:${repositoryId}`,
+        type,
+        subject: `pull_request/${pr.number}`,
+        time: pr.closed_at,
+        datacontenttype: 'application/json',
+        dataschema: GithubDataSchemas.PULL_REQUEST_V1,
+        data: {
+            repository: {
+                id: repositoryId,
+                full_name: s.repository.full_name,
+                url: s.repository.html_url
+            },
+            pull_request: {
+                id: String(pr.id),
+                number: pr.number,
+                url: pr.html_url,
+                title: pr.title,
+                base_ref: pr.base_ref,
+                is_cross_repository: pr.is_cross_repository,
+                created_at: pr.created_at,
+                closed_at: pr.closed_at,
+                merged: true,
+                labels: [...pr.labels].sort()
+            },
+            activities,
+            relationships,
+            capture
+        }
+    };
+}
+
+const TRACKER_VERSION = '0.3.1';
+
+const captureInfo = (mode) => ({
+    tool: 'contribution-event-tracker',
+    version: TRACKER_VERSION,
+    mode,
+    observed_at: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z') // second precision, GitHub's format
+});
+
+const toUser = (u) => u ? { id: u.id, login: u.login, type: u.type ?? 'User' } : null;
+const toComment = (c) => ({
+    id: c.id,
+    user: toUser(c.user),
+    created_at: c.created_at,
+    html_url: c.html_url
+});
+// allow to share the code of extracting the part of the snapshot (PR data, repository)
+// from both the webhook payload and the pulls.get response. simply to avoid an extra API call when the webhook already provides the PR data.
+// further fields require different handling, so they are not included here.
+function toPullRequestPart(pr) {
+    if (!pr.closed_at)
+        throw new Error(`PR #${pr.number} has no closed_at`);
+    return {
+        repository: {
+            id: pr.base.repo.id,
+            full_name: pr.base.repo.full_name,
+            html_url: pr.base.repo.html_url
+        },
+        pull_request: {
+            id: pr.id,
+            number: pr.number,
+            html_url: pr.html_url,
+            title: pr.title,
+            base_ref: pr.base.ref,
+            is_cross_repository: !pr.head.repo || pr.head.repo.id !== pr.base.repo.id, // deleted fork → cross-repo
+            created_at: pr.created_at,
+            closed_at: pr.closed_at,
+            merged: pr.merged === true,
+            labels: pr.labels.map((l) => l.name ?? '').filter(Boolean),
+            user: toUser(pr.user),
+            merged_by: toUser(pr.merged_by)
+        }
+    };
+}
+
+async function fetchPullRequestSnapshot(client, owner, repo, number, prefetched // avoids an extra API call if the webhook provides it
+) {
+    const pr = prefetched ?? (await client.getPullRequest(owner, repo, number));
+    const [reviews, issueComments, reviewComments, closingNodes] = await Promise.all([
+        client.listReviews(owner, repo, number),
+        client.listIssueComments(owner, repo, number),
+        client.listReviewComments(owner, repo, number),
+        client.getClosingIssues(owner, repo, number)
+    ]);
+    const closingIssues = closingNodes
+        .filter((n) => n.repository !== null) // apparently can be null for some reason...
+        .map((n) => ({
+        repository: {
+            id: n.repository.databaseId,
+            full_name: n.repository.nameWithOwner,
+            html_url: n.repository.url
+        },
+        number: n.number,
+        html_url: n.url,
+        labels: n.labels.nodes.map((l) => l.name)
+    }));
+    return {
+        ...toPullRequestPart(pr),
+        reviews: reviews.map((r) => ({
+            id: r.id,
+            user: toUser(r.user),
+            state: r.state,
+            submitted_at: r.submitted_at ?? null,
+            html_url: r.html_url
+        })),
+        issue_comments: issueComments.map(toComment),
+        review_comments: reviewComments.map((c) => ({
+            ...toComment(c),
+            review_id: c.pull_request_review_id ?? undefined
+        })),
+        closing_issues: closingIssues
+    };
+}
+
+const CaptureMode = {
+    LIVE: 'live'};
+
+class PRMergedEventHandler {
+    client;
+    constructor(client) {
+        this.client = client;
+    }
+    canHandle(payload) {
+        const result = payload.action === 'closed' && payload.pull_request.merged === true;
+        logger.debug(`PRMergedEventHandler.canHandle: ${payload.action} ${payload.pull_request.merged} → ${result}`);
+        return result;
+    }
+    async process(payload) {
+        const { repository, pull_request } = payload;
+        const snapshot = await fetchPullRequestSnapshot(this.client, repository.owner.login, repository.name, pull_request.number, pull_request);
+        const event = buildPullRequestEvent(snapshot, captureInfo(CaptureMode.LIVE));
+        return event ? [event] : [];
     }
 }
 
 class PRStrategy {
     handlers;
     constructor(client) {
-        this.handlers = [];
+        this.handlers = [new PRMergedEventHandler(client)];
     }
     canHandle(event) {
         logger.debug(`Checking if event type: ${event} can be handled`);
@@ -89454,14 +89868,13 @@ class PRStrategy {
     }
     async process(payload) {
         logger.debug('Processing PR payload');
-        const handler = this.handlers.find((h) => h.canHandle(payload));
-        return handler ? await handler.process(payload) : [];
+        const prPayload = payload;
+        const handler = this.handlers.find((h) => h.canHandle(prPayload));
+        return handler ? await handler.process(prPayload) : [];
     }
 }
 
-const createProcessors = (client) => [
-    new PRStrategy(client),
-];
+const createProcessors = (client) => [new PRStrategy(client)];
 
 class ApicuronRequestError extends Error {
     status;
@@ -89503,6 +89916,9 @@ class ApicuronClient {
     }
 }
 
+// Safety invariant: this action runs under `pull_request_target`, with access to
+// secrets. It only reads PR metadata through the API and must never check out
+// or execute the PR's code.
 async function run() {
     try {
         const dryRun = getBooleanInput('dry-run');
