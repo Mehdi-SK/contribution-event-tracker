@@ -88727,6 +88727,27 @@ function getInput(name, options) {
     }
     return val.trim();
 }
+/**
+ * Gets the input value of the boolean type in the YAML 1.2 "core schema" specification.
+ * Support boolean input list: `true | True | TRUE | false | False | FALSE` .
+ * The return value is also in boolean type.
+ * ref: https://yaml.org/spec/1.2/spec.html#id2804923
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   boolean
+ */
+function getBooleanInput(name, options) {
+    const trueValue = ['true', 'True', 'TRUE'];
+    const falseValue = ['false', 'False', 'FALSE'];
+    const val = getInput(name, options);
+    if (trueValue.includes(val))
+        return true;
+    if (falseValue.includes(val))
+        return false;
+    throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}\n` +
+        `Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
+}
 //-----------------------------------------------------------------------
 // Results
 //-----------------------------------------------------------------------
@@ -89360,112 +89381,158 @@ const logger = {
 };
 
 class GitHubClient {
-    static octokit;
-    static initialize(token) {
+    octokit;
+    constructor(token) {
         this.octokit = getOctokit(token);
     }
-    static async getPRReviews(owner, repo, pullNumber) {
-        const data = await this.octokit.paginate(this.octokit.rest.pulls.listReviews, {
+    async getPullRequest(owner, repo, number) {
+        const { data } = await this.octokit.rest.pulls.get({
             owner,
             repo,
-            pull_number: pullNumber,
+            pull_number: number
+        });
+        return data;
+    }
+    listReviews(owner, repo, number) {
+        return this.octokit.paginate(this.octokit.rest.pulls.listReviews, {
+            owner,
+            repo,
+            pull_number: number,
             per_page: 100
         });
-        return data
-            .filter((review) => {
-            if (review.user) {
-                return true;
-            }
-            logger.info(`Review without user found. Skipping this review. ${JSON.stringify(review)}`);
-            return false;
-        })
-            .map((review) => {
-            return {
-                username: review.user.login,
-                state: review.state,
-                submitted_at: review.submitted_at || Date.now().toString()
-            };
+    }
+    listIssueComments(owner, repo, number) {
+        return this.octokit.paginate(this.octokit.rest.issues.listComments, {
+            owner,
+            repo,
+            issue_number: number,
+            per_page: 100
         });
     }
-}
-
-const EventTypes = {
-    PULL_REQUEST: 'pull_request'};
-
-async function getPullRequestReviewers(owner_login, repo_name, pr_number) {
-    const reviews = await GitHubClient.getPRReviews(owner_login, repo_name, pr_number);
-    return reviews.filter((r) => {
-        logger.debug(`Reviewer: ${JSON.stringify(r)} for PR ${pr_number} in ${owner_login}/${repo_name}`);
-        return r.state !== 'COMMENTED';
-    });
-}
-
-class PRMergedEventHandler {
-    canHandle(payload) {
-        logger.debug(`PRMergedEventHandler.canHandle: ${payload.action} ${payload.pull_request.merged}`);
-        const result = payload.action === 'closed' && payload.pull_request.merged === true;
-        logger.debug(`PRMergedEventHandler.canHandle: ${result}`);
-        return result;
+    listReviewComments(owner, repo, number) {
+        return this.octokit.paginate(this.octokit.rest.pulls.listReviewComments, {
+            owner,
+            repo,
+            pull_number: number,
+            per_page: 100
+        });
     }
-    async process(payload) {
-        const { pull_request, repository } = payload;
-        if (!pull_request.user) {
-            throw new Error('Pull request user is null');
+    async getClosingIssues(owner, repo, number) {
+        const CLOSING_ISSUES_QUERY = `
+    query($owner: String!, $repo: String!, $number: Int!) {
+      repository(owner: $owner, name: $repo) {
+        pullRequest(number: $number) {
+          closingIssuesReferences(first: 50) {
+            nodes {
+              number
+              url
+              repository { databaseId nameWithOwner url }
+              labels(first: 50) { nodes { name } }
+            }
+          }
         }
-        const reviews = await getPullRequestReviewers(repository.owner.login, repository.name, pull_request.number);
-        const outputPayload = {
-            contribution_id: `pull_request-merged-${repository.owner.login}-${repository.name}-${pull_request.number}`,
-            github_login: pull_request.user.login,
-            context: {
-                pr_id: pull_request.id.toString(),
-                pr_url: pull_request.html_url,
-                labels: pull_request.labels.map((label) => label.name),
-                reviewers: reviews,
-                target_branch: pull_request.base.ref,
-                title: pull_request.title
-            },
-            timestamp: pull_request.merged_at ?? new Date().toISOString(),
-            repository: repository.full_name,
-            event_type: EventTypes.PULL_REQUEST
-        };
-        return [outputPayload];
+      }
+    }`;
+        const res = await this.octokit.graphql(CLOSING_ISSUES_QUERY, { owner, repo, number });
+        return (res.repository?.pullRequest?.closingIssuesReferences.nodes ?? []).filter((n) => n !== null);
+    }
+    listClosedPullRequests(owner, repo) {
+        return this.octokit.paginate.iterator(this.octokit.rest.pulls.list, {
+            owner, repo, state: 'closed', per_page: 100,
+        });
     }
 }
 
 class PRStrategy {
-    handlers = [new PRMergedEventHandler()];
+    handlers;
+    constructor(client) {
+        this.handlers = [];
+    }
     canHandle(event) {
         logger.debug(`Checking if event type: ${event} can be handled`);
-        return event === 'pull_request';
+        return event === 'pull_request' || event === 'pull_request_target';
     }
     async process(payload) {
-        logger.debug(`Processing PR payload`);
+        logger.debug('Processing PR payload');
         const handler = this.handlers.find((h) => h.canHandle(payload));
-        return handler ? await handler.process(payload) : null;
+        return handler ? await handler.process(payload) : [];
     }
 }
 
-const processors = [
-    //  new PushStrategy(),
-    new PRStrategy()
+const createProcessors = (client) => [
+    new PRStrategy(client),
 ];
 
-async function initializeClients() {
-    GitHubClient.initialize(getInput('github-token', { required: true }));
+class ApicuronRequestError extends Error {
+    status;
+    constructor(status, message) {
+        super(message);
+        this.status = status;
+    }
 }
+
+const DEFAULT_APICURON_URL = 'https://apicuron.org/api';
+class ApicuronClient {
+    baseUrl;
+    token;
+    constructor(baseUrl, token) {
+        this.baseUrl = baseUrl;
+        this.token = token;
+    }
+    sendEvent(event) {
+        return this.post('/tracker-events', event);
+    }
+    sendBatch(events) {
+        return this.post('/tracker-events/batch', { events });
+    }
+    async post(path, body) {
+        const response = await fetch(`${this.baseUrl.replace(/\/$/, '')}${path}`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${this.token}`,
+                version: '2',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+        const text = await response.text();
+        if (response.status !== 202) {
+            throw new ApicuronRequestError(response.status, `APICURON responded ${response.status}: ${text}`);
+        }
+        return JSON.parse(text).data;
+    }
+}
+
 async function run() {
     try {
-        await initializeClients();
-        const event = context.eventName;
-        const payload = context.payload;
-        const processor = processors.find((p) => p.canHandle(event));
-        const trackedEvents = processor ? await processor.process(payload) : null;
-        logger.info('Output:');
-        logger.info(JSON.stringify(trackedEvents, null, 2));
+        const dryRun = getBooleanInput('dry-run');
+        const token = getInput('apicuron-token');
+        if (!dryRun && !token) {
+            throw new Error('apicuron-token is required unless dry-run is true');
+        }
+        const client = new GitHubClient(getInput('github-token', { required: true }));
+        const processors = createProcessors(client);
+        const processor = processors.find((p) => p.canHandle(context.eventName));
+        const trackedEvents = processor
+            ? await processor.process(context.payload)
+            : [];
+        if (trackedEvents.length === 0) {
+            logger.info('No event to send');
+            return;
+        }
+        if (dryRun) {
+            logger.info('Dry run, not sending:');
+            logger.info(JSON.stringify(trackedEvents, null, 2));
+            return;
+        }
+        const apicuron = new ApicuronClient(getInput('apicuron-url') || DEFAULT_APICURON_URL, token);
+        for (const event of trackedEvents) {
+            const result = await apicuron.sendEvent(event);
+            logger.info(`Event ${result.event_id}: ${result.stored ? 'stored' : 'already received'}`);
+        }
     }
     catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        setFailed(message);
+        setFailed(error instanceof Error ? error.message : String(error));
     }
 }
 
