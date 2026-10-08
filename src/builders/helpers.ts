@@ -10,6 +10,9 @@ export const toAccount = (u: TGithubUserSnapshot): TGithubAccount => ({
   id: String(u.id),
   login: u.login
 })
+
+// Activity after the PR was closed is excluded, so live capture and a later
+// backfill build the same event.
 export const occurredBy = (cutoff: string) => {
   const cutoffMs = Date.parse(cutoff)
   return (at: string | null): at is string => !!at && Date.parse(at) <= cutoffMs

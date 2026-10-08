@@ -42,7 +42,7 @@ export function buildPullRequestEvent(
 
   for (const review of s.reviews) {
     if (
-      // ignore bot reviews, uknown review states, and reviews submitted after the PR was closed
+      // ignore bot reviews, unknown review states, and reviews submitted after the PR was closed
       !isHuman(review.user) ||
       !REVIEW_STATES.has(review.state) ||
       !beforeClose(review.submitted_at)
@@ -90,7 +90,7 @@ export function buildPullRequestEvent(
 
   if (activities.length === 0) return null
 
-  // Proposed by claude: Deterministic order: API ordering is not guaranteed identical between runs
+  // Deterministic order: API ordering is not guaranteed identical between runs
   activities.sort(
     (a, b) =>
       a.at.localeCompare(b.at) ||

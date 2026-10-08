@@ -8,6 +8,9 @@ import {
   DEFAULT_APICURON_URL
 } from './client/apicuron-client/apicuron-client.js'
 
+// Safety invariant: this action runs under `pull_request_target`, with access to
+// secrets. It only reads PR metadata through the API and must never check out
+// or execute the PR's code.
 export async function run(): Promise<void> {
   try {
     const dryRun = core.getBooleanInput('dry-run')
