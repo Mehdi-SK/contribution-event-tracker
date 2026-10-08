@@ -4,6 +4,10 @@ description:
 author: 'your-name'
 
 inputs:
+  github-token:
+    description: GitHub token used to read the pull request
+    required: false
+    default: ${{ github.token }}
   apicuron-url:
     description: APICURON API base URL
     required: false
