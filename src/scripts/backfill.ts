@@ -49,7 +49,8 @@ function readConfig(): BackfillConfig {
 async function* mergedPullRequestEvents(
   github: GitHubClient,
   owner: string,
-  repo: string
+  repo: string,
+  stats: { skipped: number }
 ): AsyncGenerator<TTrackerEvent> {
   for await (const { data: prs } of github.listClosedPullRequests(
     owner,
@@ -70,6 +71,7 @@ async function* mergedPullRequestEvents(
         captureInfo(CaptureMode.BACKFILL)
       )
       if (event) yield event
+      else stats.skipped++
     }
   }
 }
@@ -90,11 +92,14 @@ async function main(): Promise<void> {
   )
 
   let built = 0
+  const stats = { skipped: 0 }
+
   // fetch, append to file, add to batch sender
   for await (const event of mergedPullRequestEvents(
     github,
     config.owner,
-    config.repo
+    config.repo,
+    stats
   )) {
     appendFileSync(config.outFile, JSON.stringify(event) + '\n')
     built++
@@ -106,7 +111,9 @@ async function main(): Promise<void> {
   const sent = sender
     ? `, ${sender.totals.stored} stored, ${sender.totals.duplicates} already received`
     : ''
-  console.log(`Done: ${built} events built${sent}`)
+  console.log(
+    `Done: ${built} events built, ${stats.skipped} merged PRs skipped (no human activity)${sent}`
+  )
 }
 
 main().catch((error) => {
