@@ -14,7 +14,7 @@ export interface TCommentSnapshot {
   id: number
   user: TGithubUserSnapshot | null
   created_at: string
-  html_url: string,
+  html_url: string
   review_id?: number
 }
 

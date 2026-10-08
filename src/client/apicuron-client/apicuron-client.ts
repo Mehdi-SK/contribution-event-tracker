@@ -1,5 +1,9 @@
 import type { TTrackerEvent } from '../../types/events/index.js'
-import { ApicuronRequestError, TBatchIngestResult, TIngestResult } from './apicuron.types.js'
+import {
+  ApicuronRequestError,
+  TBatchIngestResult,
+  TIngestResult
+} from './apicuron.types.js'
 
 export const DEFAULT_APICURON_URL = 'https://apicuron.org/api'
 
@@ -29,7 +33,10 @@ export class ApicuronClient {
     })
     const text = await response.text()
     if (response.status !== 202) {
-      throw new ApicuronRequestError(response.status, `APICURON responded ${response.status}: ${text}`)
+      throw new ApicuronRequestError(
+        response.status,
+        `APICURON responded ${response.status}: ${text}`
+      )
     }
     return (JSON.parse(text) as { data: T }).data
   }

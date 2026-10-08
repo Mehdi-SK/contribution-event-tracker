@@ -78,7 +78,10 @@ export class GitHubClient {
 
   listClosedPullRequests(owner: string, repo: string) {
     return this.octokit.paginate.iterator(this.octokit.rest.pulls.list, {
-      owner, repo, state: 'closed', per_page: 100,
+      owner,
+      repo,
+      state: 'closed',
+      per_page: 100
     })
   }
 }

@@ -9,7 +9,9 @@ inputs:
     required: false
     default: 'https://apicuron.org/api'
   apicuron-token:
-    description: Token of a user managing the linked APICURON resource (store as a repository secret)
+    description:
+      Token of a user managing the linked APICURON resource (store as a
+      repository secret)
     required: false
   dry-run:
     description: Build and log the event without sending it

@@ -9,4 +9,5 @@ export interface TEventEnvelope<TType extends string, TData> {
   dataschema: string
   data: TData
 }
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TAnyEventEnvelope extends TEventEnvelope<string, unknown> {}

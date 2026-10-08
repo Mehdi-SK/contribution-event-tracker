@@ -7,6 +7,7 @@ import { TGithubRepositoryRef } from './gh-repository.types.js'
 import { TGithubIssueTarget } from './gh-targets.types.js'
 import { GithubDataSchemas } from './schemas.js'
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TPullRequestRelationship extends TRelationship<
   'closes',
   TGithubIssueTarget
